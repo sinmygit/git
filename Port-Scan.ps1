@@ -83,9 +83,9 @@ Goude 2012, TrueSec
                 }
                
                 # Return Object
-                "$a.$b.$c.$d" + " : " $openPorts
+                "$a.$b.$c.$d" + " : " + $openPorts
             }
-            
+            }
         }
         }
     }
