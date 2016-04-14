@@ -1,5 +1,4 @@
-
-function Port-Scan {
+function Port-Scan{
 <#
 .PARAMETER Ports
 Ports That should be scanned, default values are: 21,22,23,53,69,71,80,98,110,139,111,
@@ -59,7 +58,7 @@ Goude 2012, TrueSec
         foreach($b in ($SIP.Split(".")[1]..$EIP.Split(".")[1])) {
         foreach($c in ($SIP.Split(".")[2]..$EIP.Split(".")[2])) {
             foreach($d in ($SIP.Split(".")[3]..$EIP.Split(".")[3])) {
-            write-progress -activity PingSweep -status "$a.$b.$c.$d" -percentcomplete (($d/($EIP.Split(".")[3])) * 100)
+            
             $pingStatus = $ping.Send("$a.$b.$c.$d",$TimeOut)
             if($pingStatus.Status -eq "Success") {
                
@@ -67,7 +66,7 @@ Goude 2012, TrueSec
                 $openPorts = @()
                 for($i = 1; $i -le $ports.Count;$i++) {
                     $port = $Ports[($i-1)]
-                    write-progress -activity PortScan -status "$a.$b.$c.$d" -percentcomplete (($i/($Ports.Count)) * 100) -Id 2
+                    
                     $client = New-Object System.Net.Sockets.TcpClient
                     $beginConnect = $client.BeginConnect($pingStatus.Address,$port,$null,$null)
                     if($client.Connected) {
