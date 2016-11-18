@@ -1,8 +1,8 @@
-function PSscan
+function PSsscan
 {
 <#
 .SYNOPSIS
-ÔÚ64Î»ÏµÍ³ÔËÐÐ32Î»³ÌÐò
+åœ¨64ä½ç³»ç»Ÿè¿è¡Œ32ä½ç¨‹åº
 c:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -file aa.ps1
 
 #>
@@ -2708,5 +2708,3 @@ $DeflatedStream.Read($UncompressedFileBytes, 0, 68096) | Out-Null
 
 Main
 }
-#²ÎÊýÎª¿ÉÑ¡
-PEInjection
