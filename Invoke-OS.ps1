@@ -1,0 +1,83 @@
+Function Invoke-OS
+{
+param($target)
+ function make_smb1_anonymous_login_packet {
+ [Byte[]] $pkt = [Byte[]] (0x00)
+ $pkt += 0x00,0x00,0x48,0xff,0x53,0x4D,0x42,0x73,0x00,0x00,0x00,0x00,0x18,0x01,0x48,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0x2f,0x4b
+ $pkt += 0x00,0x00,0x00,0x00,0x0d,0xff,0x00,0x00,0x00,0x00,0xf0,0x02,0x00,0x2f,0x4b,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x41,0xc0,0x00,0x00
+ $pkt += 0x0b,0x00,0x00,0x00,0x6e,0x74,0x00,0x70,0x79,0x73,0x6d,0x62,0x00
+ return $pkt
+ }
+ function negotiate_proto_request(){
+ [Byte[]] $pkt = [Byte[]] (0x00)
+ $pkt += 0x00,0x00,0x2f
+ $pkt += 0xFF,0x53,0x4D,0x42
+ $pkt += 0x72
+ $pkt += 0x00,0x00,0x00,0x00
+ $pkt += 0x18
+ $pkt += 0x01,0x48
+ $pkt += 0x00,0x00
+ $pkt += 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+ $pkt += 0x00,0x00
+ $pkt += 0xff,0xff
+ $pkt += 0x2F,0x4B
+ $pkt += 0x00,0x00
+ $pkt += 0x00,0x00
+ $pkt += 0x00
+ $pkt += 0x0c,0x00
+ $pkt += 0x02
+ $pkt += 0x4E,0x54,0x20,0x4C,0x4D,0x20,0x30,0x2E,0x31,0x32,0x00
+ return $pkt
+ }
+ function smb_header($smbheader) {
+ $parsed_header =@{server_component=$smbheader[0..3];
+ smb_command=$smbheader[4];
+ error_class=$smbheader[5];
+ reserved1=$smbheader[6];
+ error_code=$smbheader[6..7];
+ flags=$smbheader[8];
+ flags2=$smbheader[9..10];
+ process_id_high=$smbheader[11..12];
+ signature=$smbheader[13..21];
+ reserved2=$smbheader[22..23];
+ tree_id=$smbheader[24..25];
+ process_id=$smbheader[26..27];
+ user_id=$smbheader[28..29];
+ multiplex_id=$smbheader[30..31];
+ }
+ return $parsed_header
+ }
+ function smb1_get_response($sock){
+   $tcp_response = [Array]::CreateInstance(('b'+'yte'), 1024)
+   try{
+   $sock.Receive($tcp_response)| OUT-NULl
+   }
+   catch {}
+   $netbios = $tcp_response[0..4]
+   $smb_header = $tcp_response[4..36]
+   $parsed_header = smB_heADeR($smb_header)
+   return $tcp_response, $parsed_header
+ }
+ 
+ function client_negotiate($sock){
+   $raw_proto = negotiate_proto_request
+   $sock.Send($raw_proto) | OuT-nULL
+   return sMB1_geT_REsponSe($sock)
+ }
+ 
+ function smb1_anonymous_login($sock){
+ $raw_proto = MAKe_Smb1_ANoNymOus_LOgin_PaCkET
+ $sock.Send($raw_proto) | OUT-NulL
+ return smb1_Get_ResPoNsE($sock)
+ }
+ 
+ $client = New-Object System.Net.Sockets.TcpClient($target,445)
+     
+ $sock = $client.Client
+ client_negotiate($sock) | Out-Null
+ 
+ $raw, $smbheader = smb1_anonymous_login $sock
+ $os=[system.Text.Encoding]::ascii.GetString($raw[45..($raw.count-1)]).ToLower().Replace([char]0,' ').TrimEnd()
+ 
+ Write-host $Target":"  $os
+}
