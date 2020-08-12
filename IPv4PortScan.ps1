@@ -1,3 +1,4 @@
+function IPv4PortScan{
 ###############################################################################################################
 # Language     :  PowerShell 4.0
 # Filename     :  IPv4PortScan.ps1 
@@ -321,4 +322,5 @@ Process{
 
 End{
 
+}
 }
